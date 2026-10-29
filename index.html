@@ -1,0 +1,166 @@
+<!doctype html>
+<html lang="tr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#8b5cf6">
+  <meta name="description" content="Ash Studio — tarayıcıda müzik üretim stüdyosu">
+  <title>Ash Studio</title>
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="icon" href="icons/icon.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="icons/icon-192.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Caveat:wght@600&family=Lora:ital,wght@0,400;0,600;1,400&family=Nunito:wght@400;600;700;800&display=swap">
+  <link rel="stylesheet" href="css/style.css">
+  <script>try { const t = localStorage.getItem('ash-theme'); if (t) document.documentElement.dataset.theme = t; } catch (e) {}</script>
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand">
+      <img src="icons/icon.svg" alt="" width="30" height="30">
+      <span>Ash Studio</span>
+    </div>
+
+    <div class="transport">
+      <button id="btnPlay" class="btn primary icon" title="Çal / Duraklat (Space)"><i data-ic="play"></i></button>
+      <button id="btnStop" class="btn icon" title="Durdur"><i data-ic="stop"></i></button>
+      <div class="seg" id="modeSeg">
+        <button data-mode="pattern" class="on" title="Pattern modu">PAT</button>
+        <button data-mode="song" title="Şarkı (playlist) modu">SONG</button>
+      </div>
+      <label class="field"><span>BPM</span><input id="bpm" type="number" min="40" max="300" step="1" value="120"></label>
+      <label class="field hide-sm"><span>Swing</span><input id="swing" type="range" min="0" max="100" value="0"></label>
+      <div class="pos" id="pos">1.1.1</div>
+    </div>
+
+    <div class="top-right">
+      <select id="patternSel" class="pattern-sel" title="Aktif pattern"></select>
+      <button id="btnAddPattern" class="btn icon" title="Yeni pattern"><i data-ic="plus"></i></button>
+      <button id="btnGuide" class="btn icon" title="Rehber kitabı (?)"><i data-ic="book"></i></button>
+      <button id="btnTheme" class="btn icon" title="Tema"><i data-ic="moon"></i></button>
+      <button id="btnMenu" class="btn icon" title="Dosya menüsü"><i data-ic="menu"></i></button>
+    </div>
+  </header>
+
+  <nav class="tabs" id="tabs">
+    <button data-tab="rack" class="on"><i data-ic="rack"></i><span>Kanallar</span></button>
+    <button data-tab="piano"><i data-ic="piano"></i><span>Piano Roll</span></button>
+    <button data-tab="playlist"><i data-ic="playlist"></i><span>Playlist</span></button>
+    <button data-tab="mixer"><i data-ic="mixer"></i><span>Mixer</span></button>
+    <button data-tab="stems"><i data-ic="wave"></i><span>Ayırıcı</span></button>
+    <button data-tab="examples"><i data-ic="music"></i><span>Örnekler</span></button>
+  </nav>
+
+  <main>
+    <section id="tab-rack" class="panel active">
+      <div class="toolbar gen-bar card">
+        <i data-ic="dice"></i>
+        <strong>Rastgele şarkı</strong>
+        <select id="genStyle" class="btn-select" title="Tarz"></select>
+        <button id="btnGen" class="btn sm primary"><i data-ic="dice"></i> Üret ve çal</button>
+        <span class="hint hide-sm">Davul, bas, akor ve melodiyi tarza göre baştan yazar. Tek kanal için kanal ayarlarındaki "Rastgele"yi kullan.</span>
+      </div>
+      <div class="toolbar">
+        <select id="addCh" class="btn-select"></select>
+        <label class="field"><span>Uzunluk</span>
+          <select id="patLen">
+            <option value="16">1 bar</option><option value="32">2 bar</option>
+            <option value="64">4 bar</option><option value="128">8 bar</option>
+          </select>
+        </label>
+        <div class="grow"></div>
+        <button id="btnPatRename" class="btn sm">Adlandır</button>
+        <button id="btnPatClone" class="btn sm">Klonla</button>
+        <button id="btnPatClear" class="btn sm">Temizle</button>
+        <button id="btnPatDelete" class="btn sm danger">Sil</button>
+      </div>
+      <div id="rack" class="rack card"></div>
+      <div id="inspector" class="inspector card"></div>
+    </section>
+
+    <section id="tab-piano" class="panel">
+      <div class="toolbar">
+        <label class="field"><span>Kanal</span><select id="prChannel"></select></label>
+        <label class="field"><span>Nota</span>
+          <select id="prLen">
+            <option value="1">1/16</option><option value="2" selected>1/8</option>
+            <option value="4">1/4</option><option value="8">1/2</option><option value="16">1 bar</option>
+          </select>
+        </label>
+        <button id="prMode" class="btn sm on" title="Düzenle / Kaydır (dokunmatik)"><i data-ic="pencil"></i><span>Düzenle</span></button>
+        <div class="grow"></div>
+        <span class="hint hide-sm">Tıkla: ekle · Sürükle: taşı · Kenar: uzat · Tıkla/sağ tık: sil</span>
+        <button id="prClear" class="btn sm danger">Notaları sil</button>
+      </div>
+      <div id="prScroll" class="pr-scroll card">
+        <div class="pr-inner">
+          <canvas id="prKeys" class="pr-keys"></canvas>
+          <canvas id="prGrid" class="pr-grid"></canvas>
+          <div id="prHead" class="pr-head"></div>
+        </div>
+      </div>
+    </section>
+
+    <section id="tab-playlist" class="panel">
+      <div class="toolbar">
+        <div class="seg" id="plMode">
+          <button data-mode="draw" class="on"><i data-ic="pencil"></i> Yerleştir</button>
+          <button data-mode="erase"><i data-ic="trash"></i> Sil</button>
+        </div>
+        <span class="hint">Boş hücreye tıkla: aktif pattern'i yerleştir. Bloğa tıkla: pattern'i seç. SONG modunda çalar.</span>
+      </div>
+      <div id="playlist" class="playlist card"></div>
+    </section>
+
+    <section id="tab-mixer" class="panel">
+      <div id="mixer" class="mixer"></div>
+    </section>
+
+    <section id="tab-stems" class="panel">
+      <label id="stemDrop" class="dropzone card">
+        <input id="stemFile" type="file" accept="audio/*" hidden>
+        <i data-ic="wave"></i>
+        <strong>Bir şarkı bırak veya seç</strong>
+        <span class="muted">Davul · Bas · Vokal · Diğer olarak ayrılır (cihazında, çevrimdışı)</span>
+      </label>
+      <div id="stemProg" class="progress" hidden><div class="bar"><i></i></div><span>Hazırlanıyor…</span></div>
+      <div id="stemList" class="stem-list"></div>
+    </section>
+
+    <section id="tab-examples" class="panel">
+      <div class="toolbar">
+        <span class="hint">Çiftlik oyunlarının sıcak havasında, Ash Studio'da üretilmiş özgün parçalar. Aç, kanallarını ve notalarını incele, dilediğin gibi değiştir.</span>
+      </div>
+      <div id="examples" class="examples"></div>
+    </section>
+  </main>
+
+  <div id="menu" class="menu card" hidden>
+    <label class="field block"><span>Proje adı</span><input id="projName" type="text" maxlength="40"></label>
+    <button data-act="new"><i data-ic="plus"></i> Yeni proje</button>
+    <button data-act="open"><i data-ic="upload"></i> Proje aç (.ash)</button>
+    <button data-act="save"><i data-ic="download"></i> Projeyi kaydet (.ash)</button>
+    <hr>
+    <button data-act="wav"><i data-ic="download"></i> WAV dışa aktar <small>(PAT/SONG moduna göre)</small></button>
+    <button data-act="midi"><i data-ic="download"></i> MIDI dışa aktar</button>
+    <hr>
+    <button data-act="audio"><i data-ic="upload"></i> Ses örneği içe aktar</button>
+    <button data-act="midiIn"><i data-ic="upload"></i> MIDI içe aktar</button>
+    <hr>
+    <button data-act="undo"><i data-ic="undo"></i> Geri al <small>Ctrl+Z</small></button>
+    <button data-act="redo"><i data-ic="redo"></i> Yinele <small>Ctrl+Y</small></button>
+    <hr>
+    <button data-act="guide"><i data-ic="book"></i> Rehber kitabı <small>?</small></button>
+    <button data-act="install" hidden><i data-ic="download"></i> Uygulamayı yükle</button>
+  </div>
+
+  <input id="fileProject" type="file" accept=".ash,.json,application/json" hidden>
+  <input id="fileAudio" type="file" accept="audio/*" multiple hidden>
+  <input id="fileSample" type="file" accept="audio/*" hidden>
+  <input id="fileMidi" type="file" accept=".mid,.midi,audio/midi" hidden>
+  <div id="toast" class="toast" role="status"></div>
+
+  <script type="module" src="js/app.js"></script>
+</body>
+</html>
