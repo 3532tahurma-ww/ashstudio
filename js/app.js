@@ -1,6 +1,6 @@
 import {
   state, onChange, changed, curPattern, channel, makeChannel, makePattern, notesOf, uid,
-  defaultProject, resetHistory, serialize, deserialize, loadAutosave, undo, redo, PATTERN_LENGTHS,
+  defaultProject, resetHistory, serialize, deserialize, undo, redo, PATTERN_LENGTHS,
 } from './state.js';
 import { syncMix, play, stop, isPlaying, playhead, render, decode, preview } from './engine.js';
 import { totalSteps, stepInCurrent } from './sequence.js';
@@ -352,18 +352,10 @@ function loop() {
 
 // ---------- boot ----------
 (async function init() {
-  let restored = false;
-  try {
-    const data = await loadAutosave();
-    if (data) { await deserialize(data, decode); restored = true; }
-  } catch (e) {
-    console.warn('Otomatik kayıt yüklenemedi', e);
-  }
-  if (!restored) {
-    state.project = defaultProject(true);
-    state.selected = state.project.channels[0].id;
-    resetHistory();
-  }
+  // Always start with a blank project; nothing is restored from a previous session.
+  state.project = defaultProject(false);
+  state.selected = state.project.channels[0].id;
+  resetHistory();
   syncThemeIcon();
   renderHeader();
   let saved = 'rack';

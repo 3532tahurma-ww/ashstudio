@@ -93,7 +93,7 @@ let saveTimer;
 export function changed(scope = 'all') {
   bus.dispatchEvent(new CustomEvent('change', { detail: scope }));
   clearTimeout(saveTimer);
-  saveTimer = setTimeout(() => { snapshot(); autosave(); }, 500);
+  saveTimer = setTimeout(snapshot, 500);
 }
 
 const undoStack = [], redoStack = [];

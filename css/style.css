@@ -504,6 +504,12 @@ body.dragging main { outline: 3px dashed var(--primary); outline-offset: -8px; }
 .g-keys { width: 100%; border-collapse: collapse; font-size: 14px; }
 .g-keys td { padding: 6px 4px; border-bottom: 1px dotted var(--g-rule); }
 .g-keys td:first-child { white-space: nowrap; }
+.g-beat { display: grid; grid-template-columns: auto repeat(var(--n), minmax(0, 1fr)); gap: 2px; align-items: center; margin: 6px 0 4px; }
+.g-beat b { padding-right: 8px; font-size: 12px; white-space: nowrap; }
+.g-beat i { aspect-ratio: 1; max-height: 18px; border-radius: 3px; background: var(--g-rule); }
+.g-beat i.q { margin-left: 3px; }
+.g-beat i.x { background: var(--g-accent); }
+.g-beat i.o { background: var(--g-accent); opacity: .4; }
 
 .g-ribbons { position: absolute; top: 28px; right: -34px; display: flex; flex-direction: column; gap: 4px; }
 .g-ribbons button {

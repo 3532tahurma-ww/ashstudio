@@ -3,6 +3,9 @@ import { h } from './dom.js';
 
 const k = (...keys) => keys.map((x) => `<kbd>${x}</kbd>`).join('+');
 const note = (t) => `<aside class="g-note">${t}</aside>`;
+// Mini step grid: rows of [label, pattern]; 'x' = hit, 'o' = soft hit, anything else = rest. Cells group by 4.
+const beat = (rows, foot = '') => `<div class="g-beat" style="--n:${rows[0][1].length}">${rows.map(([name, s]) =>
+  `<b>${name}</b>${[...s].map((c, i) => `<i class="${c === 'x' ? 'x' : c === 'o' ? 'o' : ''}${i && !(i % 4) ? ' q' : ''}"></i>`).join('')}`).join('')}</div>${foot ? `<p class="g-small g-center">${foot}</p>` : ''}`;
 
 const FOREWORD = `<div class="g-front">
   <div class="g-ill">🍵 🎹 🌿</div>
@@ -272,9 +275,9 @@ const CHAPTERS = [
         <li><b>Proje aç / kaydet (.ash)</b> — tüm proje tek bir dosyada; içe aktardığın ses örnekleri de içindedir. Kısayol: ${k('Ctrl', 'S')}.</li>
         <li><b>Geri al / Yinele</b> — ${k('Ctrl', 'Z')} ve ${k('Ctrl', 'Y')}.</li>
       </ul>
-      <h3>Otomatik kayıt</h3>
-      <p>Yaptığın her değişiklik tarayıcının içine sessizce kaydedilir; sayfayı kapatıp açtığında kaldığın yerden devam edersin. Ancak tarayıcı verilerini temizlersen bu kayıt da silinir.</p>
-      ${note('Sevdiğin her projenin bir .ash yedeğini al. Küçük bir alışkanlık, büyük bir huzur.')}`,
+      <h3>Her açılışta temiz sayfa</h3>
+      <p>Ash Studio her açıldığında boş bir projeyle başlar; önceki çalışman otomatik olarak geri gelmez. Devam etmek istediğin projeyi kapatmadan önce <b>.ash</b> olarak kaydet, sonra <b>Proje aç</b> ile geri yükle.</p>
+      ${note('Sevdiğin her projeyi .ash olarak kaydet. Küçük bir alışkanlık, büyük bir huzur.')}`,
       `<h3>Dışa aktarmak</h3>
       <p><b>WAV</b> — PAT modunda seçili pattern'i, SONG modunda bütün şarkıyı ses dosyası olarak çıkarır. Yankıların sönmesi için sona birkaç saniye eklenir.</p>
       <p><b>MIDI</b> — notaları ve davulları başka müzik programlarına taşımak için.</p>
@@ -318,9 +321,98 @@ const CHAPTERS = [
       </ul>`,
     ],
   },
+  {
+    icon: '🎼', title: 'Şarkı yapımı',
+    pages: [
+      `<p>Bu bölüm sıfırdan bir şarkı kurmayı adım adım anlatır. Hemen her şarkı aynı beş katmandan oluşur; hepsini aynı anda düşünmek yerine sırayla, alttan üste doğru kur:</p>
+      <dl class="g-dl">
+        <dt>1. Ritim</dt><dd>Kick, snare, hi-hat. Şarkının yürüyüşü. <i>Davul kanalları</i></dd>
+        <dt>2. Bas</dt><dd>Kick'le kol kola yürüyen kalın ses. <i>Bass, Sub, Acid</i></dd>
+        <dt>3. Akorlar</dt><dd>Duyguyu belirleyen ses halısı. <i>Pad, Keys, Strings, EPiano</i></dd>
+        <dt>4. Melodi</dt><dd>Akılda kalan, mırıldanılan kısım. <i>Lead, Pluck, Flute, Bell</i></dd>
+        <dt>5. Süsler</dt><dd>Fill'ler, crash, shaker, arpej. Geçişleri canlandırır.</dd>
+      </dl>
+      <p>Aşağıdaki ızgaralarda her kutu bir adımdır, 16 kutu 1 bar. Koyu kutu: vuruş; açık kutu: hafif (düşük sesli) vuruş. Kanallar sekmesinde aynı kutuları yakman yeterli.</p>`,
+      `<h3>Dört vuruş · House, Disco</h3>
+      <p class="g-small">BPM 120–128</p>
+      ${beat([['Kick', 'x...x...x...x...'], ['Clap', '....x.......x...'], ['Open Hat', '..x...x...x...x.'], ['Hi-Hat', 'o.o.o.o.o.o.o.o.']])}
+      <h3>Backbeat · Pop, Rock</h3>
+      <p class="g-small">BPM 90–120</p>
+      ${beat([['Kick', 'x.....x.x.......'], ['Snare', '....x.......x...'], ['Hi-Hat', 'x.x.x.x.x.x.x.x.']])}
+      <h3>Boom-bap · Hip-hop, Lo-fi</h3>
+      <p class="g-small">BPM 80–95, Swing %20–30</p>
+      ${beat([['Kick', 'x......x..x.....'], ['Snare', '....x.......x.o.'], ['Hi-Hat', 'x.x.x.x.x.x.x.x.']])}`,
+      `<h3>Trap</h3>
+      <p class="g-small">BPM 130–150; snare yalnızca 9. adımda, bu yüzden yarı hızda hissedilir</p>
+      ${beat([['Kick', 'x......x.x......'], ['Clap', '........x.......'], ['Hi-Hat', 'x.x.x.x.x.xxx.xx']])}
+      <h3>Dembow · Reggaeton</h3>
+      <p class="g-small">BPM 90–100</p>
+      ${beat([['Kick', 'x...x...x...x...'], ['Snare', '...x..x....x..x.'], ['Shaker', 'o.o.o.o.o.o.o.o.']])}
+      <h3>Fill · geçiş barı</h3>
+      <p class="g-small">Bir bölüm bitmeden önceki son bar; ardından gelen ilk adıma Crash koy</p>
+      ${beat([['Kick', 'x.......x.......'], ['Snare', '....x.....x.xxxx'], ['Tom', '........x.x.....']])}
+      ${note('Ritmi canlı tutmak için: hi-hat\'lerin ses seviyesini adım adım değiştir, Swing\'i biraz aç, her 4. barda küçük bir değişiklik yap.')}`,
+      `<h3>Bas: kick'e kilitlen</h3>
+      <p>En sağlam bas, kick'le aynı adımlarda çalan bastır. Kick'in ritmini bas kanalına kopyala, sonra Piano Roll'da notaları akorların kök notalarına taşı.</p>
+      ${beat([['Kick', 'x......x..x.....'], ['Bass', 'x......x..x.....']], 'Boom-bap: bas kick ile birlikte')}
+      <p>House'ta ise bas kick'in arasına, vuruşun “ve”sine girer; ikisi birbirine çarpmaz ve zıplayan bir his oluşur.</p>
+      ${beat([['Kick', 'x...x...x...x...'], ['Bass', '..x...x...x...x.']], 'House: bas kick\'lerin arasında')}
+      ${note('Trap\'te uzun “808” bası için Sub kanalını seç, Decay ve Release\'i artır, notaları Piano Roll\'da 1/4 ya da 1/2 uzunlukta yaz.')}`,
+      `<h3>Akorlar: hazır yürüyüşler</h3>
+      <p>Bir pad ya da keys kanalı aç, Piano Roll'da her bara bir akor koy (nota uzunluğu: <b>1 bar</b>). Akorun üç notasını aynı sütuna üst üste diz.</p>
+      <table class="g-keys">
+        <tr><td><b>Pop</b></td><td>Do · Sol · Lam · Fa</td></tr>
+        <tr><td><b>Hüzünlü</b></td><td>Lam · Fa · Do · Sol</td></tr>
+        <tr><td><b>Epik</b></td><td>Lam · Sol · Fa · Mi</td></tr>
+        <tr><td><b>Lo-fi / Caz</b></td><td>Rem7 · Sol7 · Domaj7 · Domaj7</td></tr>
+      </table>
+      <h3>Akorun notaları</h3>
+      <div class="g-grid">
+        <span><b>Do</b> — Do Mi Sol</span><span><b>Re m</b> — Re Fa La</span>
+        <span><b>Mi</b> — Mi Sol# Si</span><span><b>Fa</b> — Fa La Do</span>
+        <span><b>Sol</b> — Sol Si Re</span><span><b>La m</b> — La Do Mi</span>
+        <span><b>Rem7</b> — Re Fa La Do</span><span><b>Sol7</b> — Sol Si Re Fa</span>
+        <span><b>Domaj7</b> — Do Mi Sol Si</span>
+      </div>`,
+      `<h3>Melodi: yanlış nota yok</h3>
+      <p>Yukarıdaki akorların hepsi <b>Do majör / La minör</b> tonundadır: piyanonun yalnızca <b>beyaz tuşlarını</b> kullanırsan hiçbir nota sırıtmaz. Daha da güvenli olsun istersen <b>pentatonik</b> gamla başla:</p>
+      <p class="g-center"><b>Do · Re · Mi · Sol · La</b></p>
+      <ul class="g-list">
+        <li><b>Önce mırıldan.</b> Seçili kanalı klavye piyanosuyla (${k('A')}–${k('L')}) çalarak bir motif bul.</li>
+        <li><b>Güçlü vuruşta akor notası.</b> Barın 1. ve 9. adımına o anki akorun notalarından birini koy.</li>
+        <li><b>Soru–cevap.</b> 2 barlık bir motif yaz, sonraki 2 barda onu biraz değiştirerek tekrarla.</li>
+        <li><b>Nefes bırak.</b> Melodinin arasında sessiz adımlar olsun; her kutuyu doldurma.</li>
+        <li><b>Az nota, çok tekrar.</b> Akılda kalan melodiler genellikle 3–5 farklı notadan oluşur.</li>
+      </ul>`,
+      `<h3>Adım adım: aygıtlarla şarkı</h3>
+      <ol class="g-list">
+        <li><b>Üst çubuk</b> — BPM'i tarza göre ayarla.</li>
+        <li><b>Kanallar</b> — pattern uzunluğunu <b>4 bar</b> yap, davul kanallarına ritmi yak, <b>Adlandır</b>: “Davul”.</li>
+        <li><b>+ Yeni pattern</b> — “Bas”: Bass kanalı ekle, çift tıkla, Piano Roll'da bas notalarını yaz.</li>
+        <li><b>+ Yeni pattern</b> — “Akor”: Pad ya da Keys ile 4 barlık yürüyüşü yaz.</li>
+        <li><b>+ Yeni pattern</b> — “Melodi”: Lead ya da Pluck ile motifini yaz.</li>
+        <li>“Davul”u seç, <b>Klonla</b>, son bara fill ekle: “Davul Fill”.</li>
+        <li><b>Playlist</b> — her pattern'e ayrı bir şerit ver ve aşağıdaki haritaya göre diz.</li>
+        <li><b>Mixer</b> — seviyeleri dengele (sonraki sayfa).</li>
+        <li><b>SONG</b> modunda baştan sona dinle, ☰ menüsünden <b>WAV</b> olarak çıkar.</li>
+      </ol>`,
+      `<h3>Şarkı haritası</h3>
+      <p class="g-small">Her kutu 1 bar. Giriş · Kıta · Nakarat · Kapanış</p>
+      ${beat([['Akor', 'xxxxxxxxxxxxxxxxxxxxxxxx'], ['Davul', '....xxxxxxx.xxxxxxx.....'], ['Fill', '...........x.......x....'], ['Bas', '....xxxxxxxxxxxxxxxx....'], ['Melodi', '............xxxxxxxxxxxx']], 'Bar 1–4 giriş · 5–12 kıta · 13–20 nakarat · 21–24 kapanış')}
+      <h3>Mix için başlangıç ayarları</h3>
+      <table class="g-keys">
+        <tr><td><b>Kick, Bas</b></td><td>En yüksek; Pan ortada, reverb yok</td></tr>
+        <tr><td><b>Snare / Clap</b></td><td>Kick'ten biraz kısık; az reverb</td></tr>
+        <tr><td><b>Hi-Hat, Shaker</b></td><td>Kısık; Pan hafif sağa ya da sola</td></tr>
+        <tr><td><b>Akor</b></td><td>Arka planda; bol reverb</td></tr>
+        <tr><td><b>Melodi</b></td><td>Akordan biraz yüksek; hafif delay</td></tr>
+      </table>
+      ${note('Bitti mi? Bir gün ara ver, sonra tekrar dinle. Taze kulak, en iyi mix aracıdır.')}`,
+    ],
+  },
 ];
 
-const RIBBON = ['#d98ba0', '#e2a868', '#9cb87a', '#7fa9c9', '#b496d6', '#e0c068', '#c98f6f', '#86b8a8', '#d4a5c4', '#a8a07a', '#8f9fd1'];
+const RIBBON = ['#d98ba0', '#e2a868', '#9cb87a', '#7fa9c9', '#b496d6', '#e0c068', '#c98f6f', '#86b8a8', '#d4a5c4', '#a8a07a', '#8f9fd1', '#c97a7a'];
 
 const PAGES = [{ ch: -1, html: FOREWORD }, { ch: -1, toc: true }];
 CHAPTERS.forEach((c, i) => c.pages.forEach((html, j) => {
