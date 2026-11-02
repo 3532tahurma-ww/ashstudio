@@ -154,6 +154,7 @@ export function renderInspector() {
       param('Pitch', 'pitch', { min: -24, max: 24, step: 1, fmt: fmtSt }),
       param('Kazanç', 'gain', { min: 0, max: 2, step: 0.01 }),
       h('button', { class: 'btn sm', onclick: () => document.dispatchEvent(new CustomEvent('ash:load-sample', { detail: ch.id })) }, icon('upload'), smp ? 'Değiştir' : 'Sample yükle'),
+      smp ? h('button', { class: 'btn sm', title: 'Dosyanın tamamını şarkıya ses klibi olarak koy', onclick: () => document.dispatchEvent(new CustomEvent('ash:place-clip', { detail: ch.id })) }, icon('playlist'), 'Playlist\'e yerleştir') : null,
     );
     if (smp) {
       const cv = h('canvas', { class: 'wave-canvas' });

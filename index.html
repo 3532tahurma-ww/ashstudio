@@ -108,8 +108,10 @@
           <button data-mode="draw" class="on"><i data-ic="pencil"></i> Yerleştir</button>
           <button data-mode="erase"><i data-ic="trash"></i> Sil</button>
         </div>
-        <span class="hint">Boş hücreye tıkla: aktif pattern'i yerleştir. Bloğa tıkla: pattern'i seç. SONG modunda çalar.</span>
+        <button id="btnPlAudio" class="btn sm"><i data-ic="upload"></i> Şarkı / vokal ekle</button>
+        <span class="hint">Boş hücre: pattern yerleştir. Ses klibine tıkla: düzenle, sürükle: taşı. Bar numarası: oradan çal.</span>
       </div>
+      <div id="plClip" class="card pl-edit" hidden></div>
       <div id="playlist" class="playlist card"></div>
     </section>
 
@@ -119,7 +121,7 @@
 
     <section id="tab-stems" class="panel">
       <label id="stemDrop" class="dropzone card">
-        <input id="stemFile" type="file" accept="audio/*" hidden>
+        <input id="stemFile" type="file" accept="audio/*,.m4a,.aac,.mp4,.mp3,.wav,.ogg,.opus,.flac,.webm" hidden>
         <i data-ic="wave"></i>
         <strong>Bir şarkı bırak veya seç</strong>
         <span class="muted">Davul · Bas · Vokal · Diğer olarak ayrılır (cihazında, çevrimdışı)</span>
@@ -145,6 +147,7 @@
     <button data-act="wav"><i data-ic="download"></i> WAV dışa aktar <small>(PAT/SONG moduna göre)</small></button>
     <button data-act="midi"><i data-ic="download"></i> MIDI dışa aktar</button>
     <hr>
+    <button data-act="audioClip"><i data-ic="upload"></i> Şarkı / vokal içe aktar</button>
     <button data-act="audio"><i data-ic="upload"></i> Ses örneği içe aktar</button>
     <button data-act="midiIn"><i data-ic="upload"></i> MIDI içe aktar</button>
     <hr>
@@ -156,8 +159,8 @@
   </div>
 
   <input id="fileProject" type="file" accept=".ash,.json,application/json" hidden>
-  <input id="fileAudio" type="file" accept="audio/*" multiple hidden>
-  <input id="fileSample" type="file" accept="audio/*" hidden>
+  <input id="fileAudio" type="file" accept="audio/*,.m4a,.aac,.mp4,.mp3,.wav,.ogg,.opus,.flac,.webm" multiple hidden>
+  <input id="fileSample" type="file" accept="audio/*,.m4a,.aac,.mp4,.mp3,.wav,.ogg,.opus,.flac,.webm" hidden>
   <input id="fileMidi" type="file" accept=".mid,.midi,audio/midi" hidden>
   <div id="toast" class="toast" role="status"></div>
 

@@ -1,5 +1,5 @@
 import { encodeWav, b64ToAb } from './fileio.js';
-import { currentPattern } from './sequence.js';
+import { currentPattern, clipSteps, clipStart } from './sequence.js';
 
 export const DRUMS = { kick: 'Kick', snare: 'Snare', clap: 'Clap', hat: 'Hi-Hat', ohat: 'Open Hat', tom: 'Tom', perc: 'Perc', rim: 'Rim', shaker: 'Shaker',
   cowbell: 'Cowbell', conga: 'Conga', crash: 'Crash', ride: 'Ride', snap: 'Snap', block: 'Wood Block' };
@@ -21,6 +21,14 @@ export const SYNTH_PRESETS = {
   Sub: { wave: 'sine', attack: 0.004, decay: 0.3, sustain: 0.8, release: 0.1, cutoff: 800, res: 0.5, detune: 0, envAmt: 0, octave: 0 },
 };
 export const PATTERN_LENGTHS = [16, 32, 64, 128];
+// Master chain: 3-band EQ (dB), glue compression (0..1), loudness drive into the limiter (dB).
+export const MASTERING = { low: 0, mid: 0, high: 0, glue: 0.5, loud: 0 };
+export const MASTER_PRESETS = {
+  'Doğal': { low: 0, mid: 0, high: 0, glue: 0.4, loud: 0 },
+  'Sıcak': { low: 2.5, mid: -1, high: -1.5, glue: 0.6, loud: 2 },
+  'Parlak': { low: 0, mid: -0.5, high: 3, glue: 0.5, loud: 2 },
+  'Yüksek': { low: 1.5, mid: 0, high: 1.5, glue: 0.7, loud: 6 },
+};
 
 export const uid = () => Math.random().toString(36).slice(2, 10);
 
@@ -33,7 +41,7 @@ let colorIdx = 0;
 export function makeChannel(type, opt = {}) {
   const ch = {
     id: uid(), type, name: opt.name || 'Kanal', color: opt.color || COLORS[colorIdx++ % COLORS.length],
-    vol: opt.vol ?? 0.8, pan: 0, mute: false, solo: false, rev: 0.08, dly: 0, params: {},
+    vol: opt.vol ?? 0.8, pan: 0, mute: false, solo: false, rev: 0.08, dly: 0, eqLow: 0, eqMid: 0, eqHigh: 0, comp: 0, params: {},
   };
   if (type === 'drum') { ch.drum = opt.drum || 'kick'; ch.name = opt.name || DRUMS[ch.drum]; ch.params = { tune: 0, decay: 1 }; }
   if (type === 'synth') { const preset = opt.preset || 'Lead'; ch.name = opt.name || preset; ch.params = { preset, ...SYNTH_PRESETS[preset] }; }
@@ -53,7 +61,7 @@ export function defaultProject(demo = true) {
   const lead = makeChannel('synth', { preset: 'Pluck' });
   const pat = makePattern('Pattern 1');
   const P = {
-    version: 1, name: 'Yeni Proje', bpm: demo ? 92 : 120, swing: demo ? 0.2 : 0, master: 0.9,
+    version: 1, name: 'Yeni Proje', bpm: demo ? 92 : 120, swing: demo ? 0.2 : 0, master: 0.9, mastering: { ...MASTERING },
     channels: [...drums, bass, pad, lead], patterns: [pat], current: pat.id,
     playlist: { lanes: 8, clips: [{ id: uid(), lane: 0, bar: 0, pattern: pat.id }] },
   };
@@ -85,7 +93,20 @@ export function removeChannel(id) {
   const P = state.project;
   P.channels = P.channels.filter((c) => c.id !== id);
   for (const p of P.patterns) { delete p.steps[id]; delete p.notes[id]; }
+  P.playlist.clips = P.playlist.clips.filter((c) => c.ch !== id);
   if (state.selected === id) state.selected = P.channels[0]?.id || null;
+}
+
+// Places a sample channel's file on the playlist as an audio clip, on the first lane free from `bar` on.
+export function addAudioClip(ch, dur, bar = 0) {
+  const P = state.project, pl = P.playlist;
+  const clip = { id: uid(), lane: 0, bar, ch: ch.id, offset: 0, dur, gain: 1, fadeIn: 0, fadeOut: 0 };
+  const s0 = clipStart(clip), s1 = s0 + clipSteps(P, clip);
+  const busy = (l) => pl.clips.some((c) => c.lane === l && clipStart(c) < s1 && s0 < clipStart(c) + clipSteps(P, c));
+  while (busy(clip.lane)) clip.lane++;
+  pl.lanes = Math.max(pl.lanes, clip.lane + 1);
+  pl.clips.push(clip);
+  return clip;
 }
 
 // ---------- change notification, autosave, undo ----------
@@ -149,6 +170,7 @@ export function serialize() {
 function migrate(P) {
   P.swing ??= 0;
   P.master ??= 0.9;
+  P.mastering = { ...MASTERING, ...P.mastering };
   P.playlist ??= { lanes: 8, clips: [] };
   P.playlist.lanes ??= 8;
   if (!P.patterns?.length) { const p = makePattern('Pattern 1'); P.patterns = [p]; P.current = p.id; }

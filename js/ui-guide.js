@@ -200,6 +200,23 @@ const CHAPTERS = [
         <li>Bar 21–24: davulsuz kapanış</li>
       </ol>
       ${note("Bir şarkıyı kanalları ayrı pattern'lere bölerek kurmak, sonradan düzenlemeyi çok kolaylaştırır.")}`,
+      `<h3>Şarkı ve vokal klipleri</h3>
+      <p>Hazır bir şarkıyı, kendi kaydettiğin ham vokali ya da bir enstrüman kaydını doğrudan playlist'e koyabilirsin: <b>Şarkı / vokal ekle</b> düğmesine bas ya da dosyayı Playlist sekmesindeyken ekrana bırak. WAV, MP3, OGG gibi tarayıcının açabildiği her ses dosyası olur.</p>
+      <ul class="g-list">
+        <li>Her dosya kendi <b>sample kanalını</b> açar; mixer'da EQ, kompresör, reverb ile işlenir.</li>
+        <li>Klip boş bir şeride, 1. bara yerleşir. Fareyle <b>sürükle</b>: vuruşlara yapışarak taşınır.</li>
+        <li><b>Klibe tıkla</b>: üstte düzenleyici açılır.</li>
+        <li>Bar numarasına tıklayınca şarkı oradan çalar; klip ortasından da doğru yerden başlar.</li>
+      </ul>`,
+      `<h3>Klip düzenleyici</h3>
+      <dl class="g-dl">
+        <dt>Başlangıç · Şerit</dt><dd>Klibin hangi barda ve hangi şeritte başlayacağı (çeyrek bar adımlarla).</dd>
+        <dt>Seviye</dt><dd>Yalnızca bu klibin sesi, dB olarak.</dd>
+        <dt>Baştan kırp · Uzunluk</dt><dd>Dosyanın başındaki sessizliği ya da istemediğin kısmı at; sonunu kısalt.</dd>
+        <dt>Fade in · Fade out</dt><dd>Sesin yavaşça açılıp kapanması; tıkırtısız geçişler için birkaç yüz milisaniye bile yeter.</dd>
+        <dt>Klonla</dt><dd>Klibin bir kopyasını hemen arkasına koyar: nakaratı tekrarlamak için ideal.</dd>
+      </dl>
+      ${note("Ses klipleri tempoyla esnemez. Hazır bir şarkının üstüne çalacaksan önce onun BPM'ini üst çubuğa yaz; ritmin onunla aynı hızda akar.")}`,
     ],
   },
   {
@@ -224,6 +241,30 @@ const CHAPTERS = [
         <li>Master ışığı sürekli tepede kalıyorsa genel sesi biraz indir.</li>
       </ul>
       ${note('Solo düğmesi bir kanalı tek başına dinlemenin en hızlı yolu. İşin bitince kapatmayı unutma; yoksa “ses gitti” sanabilirsin!')}`,
+      `<h3>Mix: EQ ve kompresör</h3>
+      <p>Her kanal şeridinde bir <b>EQ</b> ve bir <b>kompresör</b> vardır. Değere çift tıklarsan sıfırlanır.</p>
+      <dl class="g-dl">
+        <dt>Bas · Orta · Tiz</dt><dd>±12 dB. Bas kalınlık ve gümbürtü, Orta gövde ve “burun” sesi, Tiz parlaklık ve hava.</dd>
+        <dt>Komp</dt><dd>Sesin yüksek yerlerini bastırıp alçak yerlerini öne çeker; ses daha dengeli ve yakın duyulur.</dd>
+      </dl>
+      <h3>Ham vokal için tarif</h3>
+      <ol class="g-list">
+        <li><b>Bas</b> −4…−6: mikrofon gümbürtüsünü al.</li>
+        <li><b>Orta</b> −1…−2: boğukluk varsa biraz kıs.</li>
+        <li><b>Tiz</b> +2…+4: netlik ve hava.</li>
+        <li><b>Komp</b> %40–60: kelimeler eşit duyulsun.</li>
+        <li><b>Reverb</b> 0.15–0.25, <b>Delay</b> 0.1: odaya yerleştir.</li>
+      </ol>`,
+      `<h3>Mastering</h3>
+      <p>Mastering, bitmiş mix'i bir bütün olarak cilalamaktır. MASTER şeridinde bulunur:</p>
+      <dl class="g-dl">
+        <dt>Hazır…</dt><dd>Doğal, Sıcak, Parlak, Yüksek: iyi bir başlangıç noktası.</dd>
+        <dt>EQ</dt><dd>Tüm şarkının rengi. Küçük oynat: ±1–3 dB çoğu zaman yeter.</dd>
+        <dt>Glue</dt><dd>Hafif bir kompresör; kanalları birbirine “yapıştırır”.</dd>
+        <dt>Loudness</dt><dd>Şarkıyı limiter'a doğru iter: daha yüksek ama fazlası sesi ezer.</dd>
+      </dl>
+      <p>En sonda bir <b>limiter</b> sesin patlamasını engeller. WAV dışa aktarımı tüm bu ayarlarla yapılır.</p>
+      ${note('Mastering yaparken ara sıra Loudness\'ı sıfırlayıp aynı seviyede karşılaştır: “daha yüksek” her zaman “daha iyi” değildir.')}`,
     ],
   },
   {
@@ -272,6 +313,7 @@ const CHAPTERS = [
       <ul class="g-list">
         <li><b>Proje adı</b> — kaydederken dosya adı olarak kullanılır.</li>
         <li><b>Yeni proje</b> — boş bir sayfa açar (önce sorar).</li>
+        <li><b>Şarkı / vokal içe aktar</b> — ses dosyasını playlist'e klip olarak koyar (Bölüm 6).</li>
         <li><b>Proje aç / kaydet (.ash)</b> — tüm proje tek bir dosyada; içe aktardığın ses örnekleri de içindedir. Kısayol: ${k('Ctrl', 'S')}.</li>
         <li><b>Geri al / Yinele</b> — ${k('Ctrl', 'Z')} ve ${k('Ctrl', 'Y')}.</li>
       </ul>
@@ -410,9 +452,141 @@ const CHAPTERS = [
       ${note('Bitti mi? Bir gün ara ver, sonra tekrar dinle. Taze kulak, en iyi mix aracıdır.')}`,
     ],
   },
+  {
+    icon: '🧩', title: 'Şarkının bölümleri',
+    pages: [
+      `<p>Bir şarkı baştan sona aynı kalmaz; bir hikâye gibi açılır, yükselir, soluklanır ve kapanır. Her bölümün kendi görevi, kendi enerjisi ve çoğu zaman kendi akorları vardır.</p>
+      <dl class="g-dl">
+        <dt>Giriş</dt><dd>Dinleyiciyi içeri davet eder. Az katman: yalnızca akor ya da melodinin bir parçası. 2–4 bar.</dd>
+        <dt>Kıta</dt><dd>Hikâyeyi anlatır. Sade davul, alçak ve konuşur gibi bir melodi. Her kıtada sözler değişir, müzik aynı kalır.</dd>
+        <dt>Ön nakarat</dt><dd>Gerilim kurar. Akorlar değişir, snare sıklaşır, melodi yükselir; “bir şey geliyor” hissi.</dd>
+        <dt>Nakarat</dt><dd>Şarkının kalbi. En dolu, en yüksek, en akılda kalan kısım; her seferinde aynı tekrarlanır.</dd>
+        <dt>Köprü</dt><dd>Şarkıda bir kez gelen sürpriz. Yeni akorlar, farklı ritim, bazen başka bir ton.</dd>
+        <dt>Ara / Breakdown</dt><dd>Davullar çekilir, ortalık sakinleşir; bir sonraki patlamaya nefes hazırlığı.</dd>
+        <dt>Drop</dt><dd>Elektronik müzikte nakaratın yerini alır: bekletilmiş enerji bir anda bırakılır.</dd>
+        <dt>Kapanış</dt><dd>Girişi hatırlatır ya da nakaratı söndürerek bitirir; son akor “ev”e döner.</dd>
+      </dl>`,
+      `<h3>Bölümler arasında ne değişir?</h3>
+      <ul class="g-list">
+        <li><b>Katman sayısı</b> — girişte 1–2 kanal, nakaratta hepsi. Enerjiyi en kolay böyle yönetirsin.</li>
+        <li><b>Ritim yoğunluğu</b> — kıtada 8'lik hi-hat, nakaratta 16'lık; köprüde kick yarıya iner.</li>
+        <li><b>Perde (oktav)</b> — kıta melodisi alçakta, nakarat melodisi bir oktav yukarıda.</li>
+        <li><b>Akor yürüyüşü</b> — her bölüm kendi 4 akoruna sahip olabilir.</li>
+        <li><b>Ton</b> — bölümler farklı tonda olabilir (sonraki sayfa).</li>
+        <li><b>Ses rengi</b> — kıtada Keys, nakaratta Strings + Pad; aynı akor çok daha geniş duyulur.</li>
+      </ul>
+      <h3>Enerji eğrisi</h3>
+      <table class="g-keys">
+        <tr><td>Giriş</td><td>●○○○○</td></tr>
+        <tr><td>Kıta</td><td>●●○○○</td></tr>
+        <tr><td>Ön nakarat</td><td>●●●○○</td></tr>
+        <tr><td>Nakarat</td><td>●●●●○</td></tr>
+        <tr><td>Köprü</td><td>●●○○○</td></tr>
+        <tr><td>Son nakarat</td><td>●●●●●</td></tr>
+        <tr><td>Kapanış</td><td>●○○○○</td></tr>
+      </table>`,
+      `<h3>Tonla oynamak</h3>
+      <dl class="g-dl">
+        <dt>Akraba tonlar</dt><dd>La minör ve Do majör aynı beyaz tuşları kullanır. Kıtayı Lam ile başlat (hüzünlü), nakaratı Do ile başlat (aydınlık): hiçbir nota değişmeden duygu değişir.</dd>
+        <dt>Son nakaratta yükselme</dt><dd>Son nakaratı 1 ya da 2 yarım ton yukarıda çal. Pop'un en eski hilesidir; şarkıya son bir güç verir. Nakarat pattern'lerini <b>Klonla</b>, Piano Roll'da tüm notaları 2 satır yukarı taşı.</dd>
+        <dt>Ödünç akor</dt><dd>Do majörde Fa yerine bir kez <b>Fa minör</b> (Fa La♭ Do) çal: tatlı, hüzünlü bir gölge düşer. Köprü için idealdir.</dd>
+        <dt>Paralel ton</dt><dd>Do majörden <b>Do minöre</b> (Mi, La, Si yerine Mi♭, La♭, Si♭) geçmek, aynı yerde havanın kararması gibidir: oyunlarda “tehlike geldi” anı.</dd>
+        <dt>Komşu ton</dt><dd>Köprüde Fa majöre ya da Sol majöre kaymak tazelik verir; nakarata dönerken eski tona dön.</dd>
+      </dl>
+      ${note('Ton değiştirirken bas ve akor kanallarını da birlikte taşı; yalnızca melodiyi taşırsan her şey sırıtır.')}`,
+      `<h3>Örnek: bölüm bölüm bir pop şarkısı</h3>
+      <p class="g-small">Do majör · BPM 104 · her bölüm ayrı pattern</p>
+      <table class="g-keys">
+        <tr><td><b>Giriş</b> 4</td><td>Lam · Fa · Do · Sol — yalnızca Pad, davul yok</td></tr>
+        <tr><td><b>Kıta</b> 8</td><td>Aynı akorlar; Kick + Hi-Hat, Keys, alçak melodi</td></tr>
+        <tr><td><b>Ön nakarat</b> 4</td><td>Fa · Sol · Fa · Sol; snare sıklaşır, son barda fill</td></tr>
+        <tr><td><b>Nakarat</b> 8</td><td>Do · Sol · Lam · Fa; tam davul, Strings, melodi oktav yukarı</td></tr>
+        <tr><td><b>Köprü</b> 4</td><td>Rem · Mim · Fa · Fam; davul yarıya iner</td></tr>
+        <tr><td><b>Son nakarat</b> 8</td><td>Re majöre çık: Re · La · Sim · Sol; Crash ile başla</td></tr>
+        <tr><td><b>Kapanış</b> 4</td><td>Girişin Pad'i, son akor Re'de uzun</td></tr>
+      </table>
+      <h3>Ash Studio'da kurmak</h3>
+      <ol class="g-list">
+        <li>Her bölüm için ayrı pattern aç ve adlandır: “Kıta Davul”, “Nakarat Akor”…</li>
+        <li>Benzer bölümleri sıfırdan yazma: <b>Klonla</b>, sonra yalnızca farkı değiştir.</li>
+        <li>Playlist'te bölüm sınırlarını şeritlere bakarak gör; her geçişin son barına fill koy.</li>
+      </ol>`,
+    ],
+  },
+  {
+    icon: '🌍', title: 'Kültür ve tema',
+    pages: [
+      `<p>Bir müziğin “nerede” geçtiğini dört şey anlatır: <b>gam</b> (hangi notalar), <b>enstrüman</b> (hangi ses rengi), <b>ritim</b> ve <b>tempo</b>. Biri bile doğru seçilirse kulak hemen bir yere yerleşir.</p>
+      <h3>Gamlar ve duyguları</h3>
+      <p class="g-small">Hepsi kolay çalınsın diye beyaz tuşlara yakın yazıldı; # ve ♭ siyah tuştur.</p>
+      <table class="g-keys">
+        <tr><td><b>Majör</b></td><td>Do Re Mi Fa Sol La Si — neşeli, aydınlık</td></tr>
+        <tr><td><b>Minör</b></td><td>La Si Do Re Mi Fa Sol — hüzünlü, ciddi</td></tr>
+        <tr><td><b>Majör pentatonik</b></td><td>Do Re Mi Sol La — kır, folk, Uzak Doğu</td></tr>
+        <tr><td><b>Minör pentatonik</b></td><td>La Do Re Mi Sol — blues, rock, Afrika</td></tr>
+        <tr><td><b>Dorian</b></td><td>Re Mi Fa Sol La Si Do — caz, lo-fi, Kelt</td></tr>
+        <tr><td><b>Mixolidyen</b></td><td>Sol La Si Do Re Mi Fa — rock, İrlanda, kovboy</td></tr>
+        <tr><td><b>Lidyen</b></td><td>Fa Sol La Si Do Re Mi — rüya, sihir, uzay</td></tr>
+        <tr><td><b>Harmonik minör</b></td><td>La Si Do Re Mi Fa Sol# — gizem, Balkan, klasik</td></tr>
+        <tr><td><b>Hicaz</b></td><td>Mi Fa Sol# La Si Do Re — Anadolu, Orta Doğu, çöl</td></tr>
+        <tr><td><b>Japon (In)</b></td><td>Mi Fa La Si Do — Japonya, sakin ve uzak</td></tr>
+      </table>`,
+      `<h3>Duyguya göre ton ve tempo</h3>
+      <table class="g-keys">
+        <tr><td><b>Neşeli</b></td><td>Majör · 110–130 BPM · Pluck, Marimba</td></tr>
+        <tr><td><b>Hüzünlü</b></td><td>Minör · 60–80 · Keys, Strings</td></tr>
+        <tr><td><b>Huzurlu</b></td><td>Majör pentatonik · 70–90 · Pad, Flute</td></tr>
+        <tr><td><b>Gizemli</b></td><td>Harmonik minör · 70–90 · alçak Strings, Bell</td></tr>
+        <tr><td><b>Gerilimli</b></td><td>Minör, tek notada ısrar · 130–150 · Bass, Tom</td></tr>
+        <tr><td><b>Epik</b></td><td>Minör, Lam·Fa·Do·Sol · 90–110 · Brass, Strings</td></tr>
+        <tr><td><b>Romantik</b></td><td>Majör 7'li akorlar · 65–80 · EPiano, Pad</td></tr>
+      </table>
+      <h3>Hangi ton?</h3>
+      <p>Majör mü minör mü sorusu, Do mu Re mi sorusundan çok daha önemlidir. Yine de alçak tonlar (Mi, Fa) daha ağır ve karanlık, yüksek tonlar daha parlak duyulur. Vokal yazıyorsan tonu, şarkıcının rahat söyleyeceği yere göre seç.</p>
+      ${note('Gerçek geleneklerde (makamlar, ragalar) piyanoda olmayan ara sesler vardır. Buradaki gamlar onların piyanodaki yakın benzerleridir.')}`,
+      `<h3>Anadolu</h3>
+      <p><b>Gam:</b> Hicaz, Uşşak (Re Mi Fa Sol La Si♭ Do). <b>Enstrümanlar:</b> bağlama → <i>Pluck</i>, kaval ve ney → <i>Flute</i>, zurna → <i>Lead</i>, davul ve darbuka → <i>Tom</i>, <i>Conga</i>, <i>Rim</i>.</p>
+      <p class="g-small">Aksak ritmi 4/4 içinde 3+3+2 vurguyla taklit et</p>
+      ${beat([['Tom', 'x..x..x.x..x..x.'], ['Rim', '.x.x.x.x.x.x.x.x']])}
+      <h3>Orta Doğu</h3>
+      <p><b>Gam:</b> Hicaz, harmonik minör. <b>Enstrümanlar:</b> ud ve kanun → <i>Pluck</i>, ney → <i>Flute</i>, darbuka → <i>Tom</i> (düm) + <i>Rim</i> (tek). Kök ve beşliyi uzun tutan bir <i>Pad</i> zemini.</p>
+      <p class="g-small">Maksum: düm-tek-tek-düm-tek</p>
+      ${beat([['Tom', 'x.......x.......'], ['Rim', '..x...x.....x...']])}`,
+      `<h3>Uzak Doğu</h3>
+      <p><b>Gam:</b> Japonya için In gamı, Çin için majör pentatonik. <b>Enstrümanlar:</b> koto → <i>Pluck</i>, shakuhachi → <i>Flute</i>, taiko → <i>Tom</i> (Tune düşük, Decay uzun), tapınak çanı → <i>Bell</i>. Bol boşluk, yavaş tempo.</p>
+      <h3>Kelt ve ortaçağ</h3>
+      <p><b>Gam:</b> Dorian, Mixolidyen. <b>Enstrümanlar:</b> düdük → <i>Flute</i>, arp → <i>Pluck</i>, keman → <i>Strings</i>, bodhrán → <i>Tom</i>. Swing'i %40'a aç: 6/8'lik oynak bir hisse yaklaşır.</p>
+      <h3>Latin ve Karayip</h3>
+      <p><b>Gam:</b> majör, minör, Dorian. <b>Enstrümanlar:</b> conga, bongo → <i>Conga</i>, klave → <i>Wood Block</i>, <i>Cowbell</i>, <i>Marimba</i>, trompet → <i>Brass</i>.</p>
+      <p class="g-small">3-2 klave: bütün Latin ritminin iskeleti</p>
+      ${beat([['Wood Block', 'x..x..x...x.x...'], ['Conga', '..o.x.o...o.x.o.']])}`,
+      `<h3>Afrika</h3>
+      <p><b>Gam:</b> pentatonikler. <b>Enstrümanlar:</b> djembe → <i>Conga</i>, balafon → <i>Marimba</i>, kalimba → <i>Bell</i>, <i>Shaker</i>. Farklı uzunlukta tekrar eden ritimleri üst üste koy.</p>
+      <h3>Hindistan</h3>
+      <p><b>Gam:</b> Bhairav raga (Do Re♭ Mi Fa Sol La♭ Si) ya da Hicaz. <b>Enstrümanlar:</b> sitar → <i>Pluck</i> (biraz Rezonans), tabla → <i>Conga</i> + <i>Tom</i>, tanpura → hiç susmayan <i>Pad</i> drone'u (Do + Sol).</p>
+      <h3>Balkan</h3>
+      <p><b>Gam:</b> harmonik minör, Hicaz. <b>Enstrümanlar:</b> akordeon → <i>Organ</i>, klarnet → <i>Flute</i>, bando → <i>Brass</i>. Hızlı tempo (140+), 3+3+2 vurgular.</p>
+      <h3>Kovboy, blues, caz</h3>
+      <p>Kovboy: majör pentatonik, <i>Pluck</i>, at yürüyüşü gibi kick. Blues: minör pentatonik + Re# (blues notası), Swing yüksek. Caz: Dorian, 7'li akorlar, <i>EPiano</i>, <i>Ride</i>, <i>Sub</i>.</p>`,
+      `<h3>Temaya göre</h3>
+      <table class="g-keys">
+        <tr><td><b>Orman</b></td><td>Majör pentatonik · Flute, Marimba, Wood Block</td></tr>
+        <tr><td><b>Çöl</b></td><td>Hicaz · Flute, Pluck, Conga, Pad drone</td></tr>
+        <tr><td><b>Kale</b></td><td>Dorian · Strings, Brass, Tom marşı</td></tr>
+        <tr><td><b>Su altı</b></td><td>Majör 7'li akorlar · EPiano, Marimba, bol Delay</td></tr>
+        <tr><td><b>Kış</b></td><td>Majör · Bell, Strings, Shaker (kızak zili)</td></tr>
+        <tr><td><b>Uzay</b></td><td>Lidyen · Pad, Bell, uzun Reverb, davulsuz</td></tr>
+        <tr><td><b>Korku</b></td><td>Harmonik minör · alçak Strings, tek Bell, düzensiz Tom</td></tr>
+        <tr><td><b>Şehir gecesi</b></td><td>Minör · SuperSaw Pad, oktav zıplayan Bass, 100–118</td></tr>
+        <tr><td><b>Savaş</b></td><td>Minör · Brass, Strings, Tom ostinato, 140</td></tr>
+        <tr><td><b>Masal</b></td><td>Lidyen · Bell arpej, Strings, Flute</td></tr>
+      </table>
+      ${note('Bir yeri anlatmak için üç işaret yeter: doğru gam, bir imza enstrüman, bir tanıdık ritim. Gerisini kendi tarzınla doldur.')}`,
+    ],
+  },
 ];
 
-const RIBBON = ['#d98ba0', '#e2a868', '#9cb87a', '#7fa9c9', '#b496d6', '#e0c068', '#c98f6f', '#86b8a8', '#d4a5c4', '#a8a07a', '#8f9fd1', '#c97a7a'];
+const RIBBON = ['#d98ba0', '#e2a868', '#9cb87a', '#7fa9c9', '#b496d6', '#e0c068', '#c98f6f', '#86b8a8', '#d4a5c4', '#a8a07a', '#8f9fd1', '#c97a7a', '#7fb7c9', '#c9a46f'];
 
 const PAGES = [{ ch: -1, html: FOREWORD }, { ch: -1, toc: true }];
 CHAPTERS.forEach((c, i) => c.pages.forEach((html, j) => {

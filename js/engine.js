@@ -1,5 +1,5 @@
-import { state } from './state.js';
-import { eventsAt, totalSteps } from './sequence.js';
+import { state, MASTERING } from './state.js';
+import { eventsAt, totalSteps, audioAt } from './sequence.js';
 
 let ctx = null, live = null;
 
@@ -32,14 +32,20 @@ function impulse(c, seconds, decay) {
 
 export function createGraph(c, offline = false) {
   const g = { ctx: c, offline, strips: new Map() };
+  // Master: gain → EQ → glue compressor → loudness drive → limiter.
   g.master = c.createGain();
-  const comp = c.createDynamicsCompressor();
-  comp.threshold.value = -8; comp.knee.value = 8; comp.ratio.value = 4; comp.attack.value = 0.004; comp.release.value = 0.2;
+  g.eq = eq3(c);
+  g.glue = c.createDynamicsCompressor();
+  g.glue.knee.value = 8; g.glue.attack.value = 0.004; g.glue.release.value = 0.2;
+  g.drive = c.createGain();
+  const lim = c.createDynamicsCompressor();
+  lim.threshold.value = -1.5; lim.knee.value = 0; lim.ratio.value = 20; lim.attack.value = 0.001; lim.release.value = 0.08;
   g.analyser = c.createAnalyser();
   g.analyser.fftSize = 512;
-  g.master.connect(comp);
-  comp.connect(c.destination);
-  comp.connect(g.analyser);
+  g.master.connect(g.eq[0]);
+  g.eq[2].connect(g.glue).connect(g.drive).connect(lim);
+  lim.connect(c.destination);
+  lim.connect(g.analyser);
 
   g.reverbIn = c.createGain();
   const conv = c.createConvolver();
@@ -61,18 +67,27 @@ export function createGraph(c, offline = false) {
   return g;
 }
 
+// Low shelf / mid peak / high shelf, chained; gains in dB are set by syncMix.
+function eq3(c) {
+  const f = [filter(c, 'lowshelf', 180), filter(c, 'peaking', 1200, 0.8), filter(c, 'highshelf', 6500)];
+  f[0].connect(f[1]).connect(f[2]);
+  return f;
+}
+
 function ensureStrip(g, ch) {
   let s = g.strips.get(ch.id);
   if (s) return s;
   const c = g.ctx;
   s = {
-    input: c.createGain(), vol: c.createGain(), pan: c.createStereoPanner(), mute: c.createGain(),
+    input: c.createGain(), eq: eq3(c), comp: c.createDynamicsCompressor(), vol: c.createGain(), pan: c.createStereoPanner(), mute: c.createGain(),
     rev: c.createGain(), dly: c.createGain(), analyser: c.createAnalyser(),
   };
   s.analyser.fftSize = 512;
   s.rev.gain.value = 0;
   s.dly.gain.value = 0;
-  s.input.connect(s.vol).connect(s.pan).connect(s.mute);
+  s.comp.knee.value = 6; s.comp.attack.value = 0.005; s.comp.release.value = 0.15;
+  s.input.connect(s.eq[0]);
+  s.eq[2].connect(s.comp).connect(s.vol).connect(s.pan).connect(s.mute);
   s.mute.connect(g.master);
   s.mute.connect(s.analyser);
   s.mute.connect(s.rev).connect(g.reverbIn);
@@ -94,6 +109,10 @@ export function syncMix(g = live, P = state.project) {
     set(s.mute.gain, ch.mute || (anySolo && !ch.solo) ? 0 : 1);
     set(s.rev.gain, ch.rev);
     set(s.dly.gain, ch.dly * 0.8);
+    setEq(set, s.eq, ch.eqLow, ch.eqMid, ch.eqHigh);
+    // Comp 0..1: threshold 0 → -36 dB, ratio 1 → 8 (the node adds its own makeup gain).
+    set(s.comp.threshold, -(ch.comp || 0) * 36);
+    set(s.comp.ratio, 1 + (ch.comp || 0) * 7);
   }
   for (const [id, s] of g.strips) {
     if (ids.has(id)) continue;
@@ -103,6 +122,17 @@ export function syncMix(g = live, P = state.project) {
   }
   set(g.master.gain, P.master * P.master);
   set(g.delay.delayTime, Math.min(1.9, (60 / P.bpm) * 0.75));
+  const M = P.mastering || MASTERING;
+  setEq(set, g.eq, M.low, M.mid, M.high);
+  set(g.glue.threshold, -M.glue * 16);
+  set(g.glue.ratio, 1 + M.glue * 6);
+  set(g.drive.gain, Math.pow(10, M.loud / 20));
+}
+
+function setEq(set, eq, lo = 0, mid = 0, hi = 0) {
+  set(eq[0].gain, lo || 0);
+  set(eq[1].gain, mid || 0);
+  set(eq[2].gain, hi || 0);
 }
 
 function stripInput(g, ch) {
@@ -318,8 +348,33 @@ export async function preview(ch, midi = 60, dur = 0.3) {
   trigger(c, stripInput(live, ch), ch, c.currentTime + 0.01, midi, d, 0.9, false);
 }
 
+// Plays an audio clip (a = { clip, ch, into }) from `into` seconds, with clip gain and fades.
+function playClip(c, dest, a, t) {
+  const { clip, ch, into } = a;
+  const smp = state.samples.get(ch.sampleId);
+  const dur = clip.dur - into;
+  if (!smp || dur <= 0.01) return null;
+  const lvl = (clip.gain ?? 1) * (ch.params.gain ?? 1);
+  const fi = Math.min(clip.fadeIn || 0, clip.dur), fo = Math.min(clip.fadeOut || 0, clip.dur - fi);
+  const g = c.createGain();
+  g.gain.setValueAtTime(into < fi ? lvl * (into / fi) : lvl, t);
+  if (into < fi) g.gain.linearRampToValueAtTime(lvl, t + fi - into);
+  if (fo > 0) {
+    const fs = clip.dur - fo;
+    if (into < fs) g.gain.setValueAtTime(lvl, t + fs - into);
+    else g.gain.setValueAtTime(lvl * ((clip.dur - into) / fo), t);
+    g.gain.linearRampToValueAtTime(0, t + dur);
+  }
+  const src = c.createBufferSource();
+  src.buffer = smp.buffer;
+  src.connect(g).connect(dest);
+  src.start(t, (clip.offset || 0) + into, dur);
+  return src;
+}
+
 // ---------- scheduler ----------
-const sch = { timer: null, step: 0, next: 0, queue: [], mode: 'pattern', last: -1 };
+const sch = { timer: null, step: 0, from: 0, next: 0, queue: [], mode: 'pattern', last: -1 };
+const clipSrcs = new Set();
 export const isPlaying = () => !!sch.timer;
 
 function tick() {
@@ -331,17 +386,23 @@ function tick() {
     for (const e of eventsAt(P, sch.mode, sch.step)) {
       trigger(ctx, stripInput(live, e.ch), e.ch, t, e.midi, e.len * sd, e.vel, e.oneShot);
     }
+    if (sch.mode === 'song') {
+      for (const a of audioAt(P, sch.step, sch.step === sch.from)) {
+        const src = playClip(ctx, stripInput(live, a.ch), a, sch.next);
+        if (src) { clipSrcs.add(src); src.onended = () => clipSrcs.delete(src); }
+      }
+    }
     sch.queue.push({ step: sch.step, t: sch.next });
     sch.step++;
     sch.next += sd;
   }
 }
 
-export async function play(mode) {
+export async function play(mode, from = 0) {
   await resume();
   stop();
   sch.mode = mode;
-  sch.step = 0;
+  sch.step = sch.from = from;
   sch.last = -1;
   sch.next = ctx.currentTime + 0.05;
   tick();
@@ -352,6 +413,8 @@ export function stop() {
   if (sch.timer) clearInterval(sch.timer);
   sch.timer = null;
   sch.queue.length = 0;
+  for (const src of clipSrcs) try { src.stop(); } catch (e) { /* not started */ }
+  clipSrcs.clear();
   sch.last = -1;
 }
 
@@ -372,6 +435,7 @@ export async function render(P, mode) {
   for (let s = 0; s < total; s++) {
     const t = s * sd + (s % 2 ? P.swing * sd * 0.5 : 0);
     for (const e of eventsAt(P, mode, s)) trigger(oc, g.strips.get(e.ch.id).input, e.ch, t, e.midi, e.len * sd, e.vel, e.oneShot);
+    if (mode === 'song') for (const a of audioAt(P, s)) playClip(oc, g.strips.get(a.ch.id).input, a, s * sd);
   }
   return oc.startRendering();
 }

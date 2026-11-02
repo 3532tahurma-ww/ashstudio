@@ -9,7 +9,7 @@ Browser-based music production PWA (FL Studio-like): step sequencer, piano roll,
 ## Structure
 - `index.html` – layout; `css/style.css` – theme tokens (light/dark via `data-theme` + prefers-color-scheme)
 - `js/app.js` – bootstrap, header/transport, tabs, menu, file ops, keyboard
-- `js/state.js` – project model, undo/redo, IndexedDB autosave, (de)serialize
+- `js/state.js` – project model, undo/redo, (de)serialize; app always boots with a blank project (no autosave restore)
 - `js/sequence.js` – pure step/event logic shared by live playback, offline render, MIDI export
 - `js/engine.js` – Web Audio: mix graph, instruments (drum/synth/sample), scheduler, offline render
 - `js/fileio.js` – WAV encoder, MIDI export/parse, base64, download

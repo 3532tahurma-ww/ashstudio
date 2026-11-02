@@ -1,14 +1,14 @@
 import {
   state, onChange, changed, curPattern, channel, makeChannel, makePattern, notesOf, uid,
-  defaultProject, resetHistory, serialize, deserialize, undo, redo, PATTERN_LENGTHS,
+  defaultProject, resetHistory, serialize, deserialize, undo, redo, PATTERN_LENGTHS, addAudioClip,
 } from './state.js';
 import { syncMix, play, stop, isPlaying, playhead, render, decode, preview } from './engine.js';
-import { totalSteps, stepInCurrent } from './sequence.js';
+import { totalSteps, stepInCurrent, BAR } from './sequence.js';
 import { encodeWav, download, exportMidi, parseMidi, abToB64 } from './fileio.js';
 import { $, hydrateIcons, setIcon, toast, h } from './dom.js';
 import { renderRack, renderInspector, rackPlayhead, initAddChannel } from './ui-rack.js';
 import { renderPiano, pianoPlayhead } from './ui-piano.js';
-import { renderPlaylist, playlistPlayhead } from './ui-playlist.js';
+import { renderPlaylist, playlistPlayhead, selectClip } from './ui-playlist.js';
 import { renderMixer, updateMeters } from './ui-mixer.js';
 import { runStems, updateStemHeads } from './ui-stems.js';
 import { initExamples } from './ui-examples.js';
@@ -55,13 +55,28 @@ onChange((scope) => {
 // ---------- transport ----------
 function updatePlayBtn() { setIcon($('#btnPlay'), isPlaying() ? 'pause' : 'play'); }
 async function togglePlay() {
-  if (isPlaying()) stop(); else await play(state.mode);
+  if (isPlaying()) stop();
+  else {
+    if (tab === 'playlist' && state.mode !== 'song') { state.mode = 'song'; renderHeader(); }
+    await play(state.mode);
+  }
   updatePlayBtn();
   if (!isPlaying()) clearPlayheads();
 }
 function clearPlayheads() { rackPlayhead(-1); pianoPlayhead(-1); playlistPlayhead(-1); $('#pos').textContent = '1.1.1'; }
 
 $('#btnPlay').addEventListener('click', togglePlay);
+async function playSongFrom(step) {
+  if (state.mode !== 'song') { state.mode = 'song'; renderHeader(); }
+  await play('song', step);
+  updatePlayBtn();
+}
+// Clicking a bar number in the playlist ruler plays the song from that bar.
+$('#playlist').addEventListener('click', (e) => {
+  const bar = e.target.closest('.pl-bar');
+  if (bar) playSongFrom(+bar.dataset.bar * BAR);
+});
+document.addEventListener('ash:play-from', (e) => playSongFrom(e.detail));
 $('#btnStop').addEventListener('click', () => { stop(); updatePlayBtn(); clearPlayheads(); });
 $('#modeSeg').addEventListener('click', async (e) => {
   const b = e.target.closest('button');
@@ -185,21 +200,36 @@ async function loadSampleInto(ch, file) {
   return ch;
 }
 
-async function importAudio(files) {
+// toPlaylist: whole songs / vocals become audio clips on the playlist (each with its own mixer channel).
+async function importAudio(files, toPlaylist = false) {
   let n = 0;
   for (const file of files) {
     try {
+      toast(`${file.name} okunuyor…`, 10000);
       const ch = makeChannel('sample', { name: file.name.replace(/\.[^.]+$/, '').slice(0, 28) });
       await loadSampleInto(ch, file);
       state.project.channels.push(ch);
       state.selected = ch.id;
+      if (toPlaylist) selectClip(addAudioClip(ch, state.samples.get(ch.sampleId).buffer.duration).id);
       n++;
     } catch (e) {
       toast(`${file.name} okunamadı`, 3500);
     }
   }
-  if (n) { changed('channels'); toast(`${n} sample eklendi`); }
+  if (!n) return;
+  if (toPlaylist) { state.mode = 'song'; showTab('playlist'); }
+  changed('channels');
+  toast(toPlaylist ? `${n} ses klibi playlist'e eklendi` : `${n} sample eklendi`);
 }
+document.addEventListener('ash:place-clip', (e) => {
+  const ch = channel(e.detail), smp = ch && state.samples.get(ch.sampleId);
+  if (!smp) return;
+  selectClip(addAudioClip(ch, smp.buffer.duration).id);
+  state.mode = 'song';
+  showTab('playlist');
+  changed('playlist');
+});
+$('#btnPlAudio').addEventListener('click', () => pick('#fileAudio', (f) => importAudio(f, true)));
 
 async function importMidi(file) {
   try {
@@ -289,6 +319,7 @@ menu.addEventListener('click', async (e) => {
   else if (act === 'wav') exportWav();
   else if (act === 'midi') exportMidiFile();
   else if (act === 'audio') pick('#fileAudio', importAudio);
+  else if (act === 'audioClip') pick('#fileAudio', (f) => importAudio(f, true));
   else if (act === 'midiIn') pick('#fileMidi', ([f]) => importMidi(f));
   else if (act === 'undo') { if (!undo()) toast('Geri alınacak bir şey yok'); }
   else if (act === 'redo') { if (!redo()) toast('Yinelenecek bir şey yok'); }
@@ -316,7 +347,7 @@ window.addEventListener('drop', (e) => {
   if (ext === 'ash' || ext === 'json') openProject(f);
   else if (ext === 'mid' || ext === 'midi') importMidi(f);
   else if (tab === 'stems') runStems(f);
-  else importAudio(files);
+  else importAudio(files, tab === 'playlist');
 });
 
 // ---------- keyboard ----------

@@ -4,13 +4,37 @@ export const BAR = 16;
 export const patternById = (P, id) => P.patterns.find((p) => p.id === id);
 export const currentPattern = (P) => patternById(P, P.current) || P.patterns[0];
 
+export const stepSec = (P) => 60 / P.bpm / 4;
+export const clipStart = (c) => Math.round(c.bar * BAR);
+
+// Playlist clip length in steps. Audio clips (c.ch) keep their length in seconds, so it follows the tempo.
+export function clipSteps(P, c) {
+  if (c.ch) return Math.max(1, Math.ceil(c.dur / stepSec(P)));
+  return patternById(P, c.pattern)?.length || 0;
+}
+
 export function songSteps(P) {
   let end = 0;
   for (const c of P.playlist.clips) {
-    const p = patternById(P, c.pattern);
-    if (p) end = Math.max(end, c.bar * BAR + p.length);
+    const n = clipSteps(P, c);
+    if (n) end = Math.max(end, clipStart(c) + n);
   }
   return end;
+}
+
+// Audio clips to start at song step g. On the first step played, clips already under way start mid-file.
+export function audioAt(P, g, first = false) {
+  const total = songSteps(P);
+  if (!total) return [];
+  g %= total;
+  const sd = stepSec(P), out = [];
+  for (const c of P.playlist.clips) {
+    if (!c.ch) continue;
+    const ch = P.channels.find((x) => x.id === c.ch);
+    const s = g - clipStart(c);
+    if (ch && (s === 0 || (first && s > 0 && s * sd < c.dur))) out.push({ clip: c, ch, into: s * sd });
+  }
+  return out;
 }
 
 export function totalSteps(P, mode) {

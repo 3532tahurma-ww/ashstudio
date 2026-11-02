@@ -1,4 +1,4 @@
-import { state, changed, makeChannel, uid } from './state.js';
+import { state, changed, makeChannel, uid, addAudioClip } from './state.js';
 import { resume } from './engine.js';
 import { separate } from './stems.js';
 import { encodeWav, download } from './fileio.js';
@@ -64,7 +64,9 @@ function stopPreview() {
 function addChannel(k, label, color) {
   const id = uid();
   state.samples.set(id, { name: `${result.name} - ${label}`, buffer: result.bufs[k] });
-  state.project.channels.push(makeChannel('sample', { sampleId: id, name: `${label} · ${result.name}`.slice(0, 28), color }));
+  const ch = makeChannel('sample', { sampleId: id, name: `${label} · ${result.name}`.slice(0, 28), color });
+  state.project.channels.push(ch);
+  addAudioClip(ch, result.bufs[k].duration);
 }
 
 function render() {
@@ -75,7 +77,7 @@ function render() {
     h('h3', {}, result.name),
     h('button', { class: 'btn primary', onclick: () => (playing && !playing.only ? (stopPreview(), render()) : playStems()) },
       icon(playing && !playing.only ? 'stop' : 'play'), playing && !playing.only ? 'Durdur' : 'Hepsini çal'),
-    h('button', { class: 'btn', onclick: () => { for (const [k, l, c] of STEMS) addChannel(k, l, c); changed('channels'); toast('4 kanal eklendi'); } }, icon('plus'), 'Tümünü kanala ekle'),
+    h('button', { class: 'btn', onclick: () => { for (const [k, l, c] of STEMS) addChannel(k, l, c); changed('channels'); toast('4 kanal ve playlist klibi eklendi'); } }, icon('plus'), 'Tümünü kanala ekle'),
   ));
   for (const [k, label, color] of STEMS) {
     const cv = h('canvas');
@@ -95,7 +97,7 @@ function render() {
       h('div', { class: 'stem-wave' }, cv, hd),
       h('div', { class: 'stem-actions' },
         h('button', { class: 'btn sm', onclick: () => download(new Blob([encodeWav(result.bufs[k])], { type: 'audio/wav' }), `${result.name}-${k}.wav`) }, icon('download'), 'WAV'),
-        h('button', { class: 'btn sm', onclick: () => { addChannel(k, label, color); changed('channels'); toast(`${label} kanala eklendi`); } }, icon('plus'), 'Kanala ekle')),
+        h('button', { class: 'btn sm', onclick: () => { addChannel(k, label, color); changed('channels'); toast(`${label} kanala ve playlist'e eklendi`); } }, icon('plus'), 'Kanala ekle')),
     ));
     requestAnimationFrame(() => drawWave(cv, result.bufs[k], color));
   }
